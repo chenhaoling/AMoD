@@ -1,34 +1,65 @@
 # AMoD
+---
 # **SUMO ride-hailling parking model simulation**
 This repository implements a comprehensive traffic simulation system focusing on roadside parking behavior and emission analysis in Beijing.
  The system integrates SUMO with advanced optimization algorithms for fleet management and ride-hailing dispatch.
 
+---
+- **project**
+  - **config**
+  - **paths**
+  - **simulation_setup**
+  - **od_demand_generator**
+  - **fleet_optimizer**
+  - **interfaces**
+  - **dispatch_manager**
+  - **ridehail_coordinator**
+  - **parking_manager**
+  - **detector**
+  - **emissions**
 
-+ **config**:
-+ **paths**: 
-+ **simulation_setup**:
-+ **od_demand_generator**:  
-+ **fleet_optimizer**:
-+ **interfaces**:
-+ **dispatch_manager**:
-+ **ridehail_coordinator**:
-+ **parking_manager**:
-+ **detector**:
-+ **emissions**:
-+ **traci_manager**:
 
-   config: Defines simulation parameters including area boundaries, vehicle densities, parking ratios, and emission factors. Supports both local and city-wide simulation modes.
-   paths: Manages file paths, SUMO installation detection, and output directory organization. Handles cross-platform compatibility for SUMO tools.
-   simulation_setup: Downloads OpenStreetMap data, converts to SUMO network format, and generates vehicle routes. Implements manual trip generation when SUMO's randomTrips.py is unavailable.
-   od_demand_generator: Implements Origin-Destination matrix-based demand generation with Beijing-specific travel patterns. Creates zone-based traffic analysis areas and generates realistic trip distributions.
-   fleet_optimizer: Implements vehicle shareability optimization based on MIT research. Constructs shareability networks and solves minimum path cover problems to determine optimal fleet sizes.
-   interfaces: Provides modular interfaces for demand generation, fleet optimization, dispatch optimization, and parking decision-making. Implements the Nature paper-based fleet optimizer and real-time dispatch algorithms.
-   dispatch_manager: Comprehensive ride-hailing dispatch system with driver-order matching algorithms. Calculates distances using Haversine formula, manages driver preferences and rejection lists.
-   ridehail_coordinator: Coordinates order generation, vehicle dispatch, and post-service parking decisions. Integrates with the main simulation loop for real-time ride-hailing operations.
-   parking_manager: Generates roadside parking density estimates based on road types and urban characteristics. Implements parking spot distribution algorithms for different road categories.
-   detector:Real-time detection and management of parking events during simulation. Implements safe parking position validation, traffic impact analysis, and emission calculations.
-   emissions: Calculates vehicle emissions based on HBEFA4 model with support for gasoline, diesel, and electric vehicles. Implements driving mode detection and CO2-equivalent calculations.
-   traci_manager: Manages SUMO TraCI connections with automatic retry mechanisms and graceful error handling.
+
+---
+
+
+   # Main Modules Overview
+
+## config
+Defines simulation parameters including area boundaries, vehicle densities, parking ratios, and emission factors. Supports both local and city-wide simulation modes.
+
+## paths
+Manages file paths, detects SUMO installation locations, and organizes output directories. Ensures cross-platform compatibility for SUMO tools.
+
+## simulation_setup
+After downloading the road network data based on OSM, convert it into a SUMO network and generate vehicle routes. Use randomTrips.py to generate initial trip data.
+
+## od_demand_generator
+Implements Origin-Destination (OD) matrix-based demand generation, incorporating Beijing-specific travel patterns. Creates zone-based traffic analysis areas and generates realistic trip distributions.
+
+## fleet_optimizer
+Optimizes vehicle shareability based on MIT research. Constructs shareability networks and solves minimum path cover problems to determine the optimal fleet size.
+
+## interfaces
+Provides modular interfaces for demand generation, fleet optimization, dispatch optimization, and parking decisions. Implements algorithms based on the "Nature" paper for fleet optimization and real-time dispatching.
+
+## dispatch_manager
+A comprehensive ride-hailing dispatch system with driver-order matching algorithms. Calculates distances using the OSMNX formula, manages driver preferences, and maintains rejection lists.
+
+## ridehail_coordinator
+Coordinates order generation, vehicle dispatch, and parking decisions post-service. Integrates with the main simulation loop for real-time ride-hailing operations.
+
+## parking_manager
+Estimates roadside parking density based on road types and urban characteristics. Implements parking spot distribution algorithms tailored for different road categories.
+
+## detector
+Performs real-time detection and management of parking events during simulation. Handles parking position validation, traffic impact analysis, and emission calculations.
+
+## emissions
+Calculates vehicle emissions based on the HBEFA4 model, supporting gasoline, diesel, and electric vehicles. Implements driving mode detection and CO₂-equivalent calculations.
+
+## traci_manager
+Manages SUMO TraCI connections with automatic retry mechanisms and error handling.
 
 
 
