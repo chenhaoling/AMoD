@@ -1,3 +1,4 @@
+
 # src/terminal_parking.py
 """私家车终点停车场模块 - 管理私家车在目的地的停车位"""
 
@@ -126,14 +127,43 @@ class TerminalParkingManager:
 
         try:
             current_edge = traci.vehicle.getRoadID(veh_id)
-            target_edge = self.sumo_parking_areas[target_spot_id]['edge_id']
+            target_info = self.sumo_parking_areas.get(target_spot_id)
+
+            if not target_info:
+                return
+
+            target_edge = target_info['edge_id']
 
             # 确认车辆已在正确的道路上
             if current_edge == target_edge:
+                # === 新增：检测是否距离过近导致无法刹车 (Too close to brake) ===
+                current_pos = traci.vehicle.getLanePosition(veh_id)
+                current_speed = traci.vehicle.getSpeed(veh_id)
+                try:
+                    decel = traci.vehicle.getDecel(veh_id)
+                except:
+                    decel = 4.0  # 默认值
+
+                parking_start_pos = target_info['position']
+
+                # 计算需要的刹车距离: d = v^2 / (2a)
+                required_braking_dist = (current_speed ** 2) / (2 * decel) if decel > 0 else 0
+
+                # 如果当前位置 + 刹车距离 > 停车位起始位置，说明来不及刹车
+                # 预留 5 米的安全缓冲
+                if current_pos + required_braking_dist + 5.0 > parking_start_pos:
+                    # 距离不足，放弃本次停车操作（车辆会驶过，稍后可能会重新寻找或循环）
+                    # 移除寻找状态，避免每帧报错
+                    del self.searching_vehicles[veh_id]
+                    return
+                # =========================================================
+
                 # 新增：预减速避免刹停距离不足
                 try:
-                    traci.vehicle.slowDown(veh_id, 3.0, 2)
-                    traci.vehicle.slowDown(veh_id, 0.5, 2)
+                    if current_speed > 3.0:
+                        traci.vehicle.slowDown(veh_id, 3.0, 2)
+                    else:
+                        traci.vehicle.slowDown(veh_id, 0.5, 2)
                 except traci.TraCIException:
                     pass
 
@@ -146,14 +176,13 @@ class TerminalParkingManager:
                 spot_number = self.parking_spot_numbers.get(target_spot_id)
                 if spot_number:
                     self.parking_records[spot_number].append(veh_id)
-                    # print(f"  车辆 {veh_id} 停入停车位 #{spot_number}")
 
                 # 更新状态
                 self.parked_vehicles.add(veh_id)
                 del self.searching_vehicles[veh_id]
 
         except traci.TraCIException as e:
-            # 如果出错,例如车位被抢占,则放弃
+            # 如果出错,例如车位被抢占或距离计算边缘,则放弃
             if veh_id in self.searching_vehicles:
                 del self.searching_vehicles[veh_id]
 
