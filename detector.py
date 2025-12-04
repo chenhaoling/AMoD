@@ -266,6 +266,7 @@ class DynamicParkingDetector:
                 print(f"网约车 {veh_id} 完成订单后开始停车")
             return True
         return False
+
     def end_parking(self, veh_id, step):
         """结束停车"""
         if veh_id in self.parked_vehicles:
@@ -430,21 +431,24 @@ class DynamicParkingDetector:
 
     def get_summary(self):
         """获取统计摘要"""
-        parking_starts = len([e for e in self.parking_events if e['event_type'] == 'roadside_parking_start'])
+        # 明确统计路边停车
+        roadside_parking_starts = len([e for e in self.parking_events
+                                       if e['event_type'] == 'roadside_parking_start'])
 
         total_co2e = 0
         total_emissions = {}
         emission_by_type = {}
         vehicle_type_counts = {'private_car': 0, 'ridehail_car': 0, 'passenger_car': 0}
-        current_vehicles = traci.vehicle.getIDList()
 
-        for veh_id in current_vehicles:
-            try:
+        try:
+            current_vehicles = traci.vehicle.getIDList()
+            for veh_id in current_vehicles:
                 vtype = traci.vehicle.getTypeID(veh_id)
                 if vtype in vehicle_type_counts:
                     vehicle_type_counts[vtype] += 1
-            except traci.TraCIException:
-                continue
+        except traci.TraCIException:
+            # 仿真结束时可能查询失败
+            pass
 
         if self.emission_records:
             total_co2e = sum(r['co2_equivalent_kg'] for r in self.emission_records)
@@ -460,8 +464,8 @@ class DynamicParkingDetector:
                 emission_by_type[vtype]['co2e'] += record['co2_equivalent_kg']
 
         return {
-            'total_parking_starts': parking_starts,
-            'currently_parking': len(self.parked_vehicles),
+            'roadside_parking_starts': roadside_parking_starts,
+            'currently_roadside_parking': len(self.parked_vehicles),
             'parking_candidates': len(self.parking_candidates),
             'total_co2_equivalent_kg': total_co2e,
             'total_emissions': total_emissions,
@@ -520,8 +524,7 @@ class DynamicParkingDetector:
 
             # 输出摘要信息
             print("\nSimulation Results Summary")
-            print(f"Total parking events: {summary['total_parking_starts']}")
-            print(f"Currently parking: {summary['currently_parking']}")
+            print(f"Total roadside parking events: {summary['roadside_parking_starts']}")
             print(f"Total CO2 equivalent: {summary['total_co2_equivalent_kg']:.3f} kg")
 
             if summary['total_emissions']:

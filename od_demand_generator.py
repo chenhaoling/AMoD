@@ -8,6 +8,11 @@ from typing import List, Dict, Tuple
 import xml.etree.ElementTree as ET
 
 
+# 固定随机种子确保可复现性
+RANDOM_SEED = 42
+random.seed(RANDOM_SEED)
+np.random.seed(RANDOM_SEED)
+
 @dataclass
 class TravelDemand:
     """出行需求"""
@@ -40,21 +45,18 @@ class ODDemandGenerator:
         self.zones = {}
         self.zone_edges = defaultdict(list)
 
-        # 北京实际出行方式分担比例
+        # 北京全域：私家车:网约车 = 6:4
         if config.simulation_type == "beijing":
             self.mode_split = {
-                'private_car': 0.65,  # 私家车35%
-                'ride_hailing': 0.35,  # 网约车12%
-
+                'private_car': 0.6,
+                'ride_hailing': 0.4,
             }
         else:
             self.mode_split = {
                 'private_car': 0.60,
                 'ride_hailing': 0.40,
-
             }
 
-        # 调整为只考虑私家车和网约车的比例
         total_car_ratio = self.mode_split['private_car'] + self.mode_split['ride_hailing']
         self.car_mode_split = {
             'private_car': self.mode_split['private_car'] / total_car_ratio,

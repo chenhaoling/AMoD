@@ -165,6 +165,7 @@ class PaperBasedFleetOptimizer(IFleetOptimizer):
     def __init__(self, config):
         self.config = config
         self.max_connection_time = 900  # 15分钟
+        self.avg_speed_kmh = 25.0
 
     def optimize_fleet_size(self, demands: List[TripDemand]) -> Dict:
         """执行车队规模优化"""
@@ -220,7 +221,7 @@ class PaperBasedFleetOptimizer(IFleetOptimizer):
 
     def _can_serve_consecutively(self, trip1: Dict, trip2: Dict) -> bool:
         """判断两个trips是否可以连续服务"""
-        # 计算行驶时间（简化版）
+        # 计算行驶时间（基于平均速度）
         travel_time = self._estimate_travel_time(trip1['dropoff_location'], trip2['pickup_location'])
 
         # 检查时间约束
@@ -302,8 +303,11 @@ class PaperBasedFleetOptimizer(IFleetOptimizer):
         return random.uniform(600, 2400)  # 10-40分钟
 
     def _estimate_travel_time(self, from_location: str, to_location: str) -> float:
-        """估算行驶时间"""
-        return random.uniform(300, 900)  # 5-15分钟
+        """估算行驶时间（基于平均速度）"""
+        # 假设平均行程距离5公里
+        assumed_distance_km = 5.0
+        travel_time_seconds = (assumed_distance_km / self.avg_speed_kmh) * 3600
+        return travel_time_seconds
 
 
 # =============================================================================
